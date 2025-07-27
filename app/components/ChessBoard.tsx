@@ -1,78 +1,80 @@
 'use client';
 
 import { Chessboard } from 'react-chessboard';
-import { Chess } from 'chess.js';
+import { Chess, Square } from 'chess.js';
 import { useState, useEffect } from 'react';
+import { Variant } from '../types/chess';
 
-// Define the Move and Variant interfaces
-interface Move {
-  san: string;
-}
-
-interface Variant {
-  name: string;
-  eco: string;
-  description: string;
-  moves: Move[];
-  isMainLine: boolean;
+// Define a reusable interface for arrows
+export interface CustomArrow {
+  startSquare: Square;
+  endSquare: Square;
+  color: string;
 }
 
 interface ChessBoardProps {
   variant: Variant;
   currentMoveIndex: number;
-  onMoveChange: (index: number) => void;
+  customArrows: CustomArrow[]; // Accept custom arrows from parent
 }
 
-// Define the Arrow interface for custom arrows
-interface ChessboardArrow {
-  startSquare: string;
-  endSquare: string;
-  color: string;
-}
 
-export default function ChessBoardComponent({ variant, currentMoveIndex, onMoveChange }: ChessBoardProps) {
+export default function ChessBoardComponent({ variant, currentMoveIndex, customArrows }: ChessBoardProps) {
   const [game, setGame] = useState(new Chess());
   const [position, setPosition] = useState(game.fen());
-  const [arrows, setArrows] = useState<ChessboardArrow[]>([]);
+  const [lastMoveArrow, setLastMoveArrow] = useState<CustomArrow[]>([]);
 
-  // Effect to update the board when the variant or move index changes
+  // Effect to update the board state and last move arrow
   useEffect(() => {
     const newGame = new Chess();
     let currentLastMove: { from: string; to: string } | null = null;
 
+    // Apply moves up to the current index
     for (let i = 0; i <= currentMoveIndex; i++) {
       if (variant.moves[i]) {
-        const move = newGame.move(variant.moves[i].san, { strict: false });
-        if (move) {
-          currentLastMove = { from: move.from, to: move.to };
+        const moveResult = newGame.move(variant.moves[i].san, { strict: false });
+        if (moveResult) {
+          currentLastMove = { from: moveResult.from, to: moveResult.to };
         }
       }
     }
 
     setPosition(newGame.fen());
+    setGame(newGame);
 
-    // Set an arrow for the last move
+    // Set a green arrow for the most recent move
     if (currentLastMove) {
-      setArrows([{
-        startSquare: currentLastMove.from,
-        endSquare: currentLastMove.to,
-        color: 'rgb(0, 150, 0)' // Green arrow
+      setLastMoveArrow([{
+        startSquare: currentLastMove.from as Square,
+        endSquare: currentLastMove.to as Square,
+        color: 'rgb(0, 150, 0)' // Green arrow for last move
       }]);
     } else {
-      setArrows([]); // Clear arrows if there are no moves
+      setLastMoveArrow([]); // Clear arrow if no moves are made
     }
   }, [variant, currentMoveIndex]);
 
-  // Options for the Chessboard component
+
+  // Determine which arrows to display: variation arrows take precedence
+  const arrowsToDisplay = customArrows.length > 0 ? customArrows : lastMoveArrow;
+    // Options for the Chessboard component
   const chessboardOptions = {
-    position: position,
-    id: 'chess-board',
-    arrows: arrows,
+    id:"chess-board",
+    position:position,
+    customArrows: {arrowsToDisplay},
+    boardWidth:560,
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full">
+      {/* <Chessboard
+        id="chess-board"
+        position={position}
+        customArrows={arrowsToDisplay}
+        boardWidth={560}
+      /> */}
       <Chessboard options={chessboardOptions} />
+
     </div>
   );
 }

@@ -28,3 +28,11 @@ export interface OpeningCategory {
   description: string;
   openings: Opening[];
 }
+
+import { Square } from 'chess.js';
+
+export interface CustomArrow {
+  startSquare: Square;
+  endSquare: Square;
+  color: string;
+}
