@@ -61,6 +61,7 @@ export const openingsData: OpeningCategory[] = [
             name: "Queen's Gambit Declined",
             eco: 'D06',
             description: "Black declines the gambit, maintaining the central pawn structure.",
+            isMainLine: false,
             moves: [
               {
                 san: 'd4',
@@ -99,6 +100,7 @@ export const openingsData: OpeningCategory[] = [
             name: "Slav Defense",
             eco: 'D10',
             description: "A solid defense where Black supports the d5 pawn with c6.",
+            isMainLine: false,
             moves: [
               {
                 san: 'd4',
@@ -179,6 +181,7 @@ export const openingsData: OpeningCategory[] = [
             name: "King's Gambit Declined",
             eco: 'C30',
             description: "Black refuses the gambit, maintaining a solid position.",
+            isMainLine: false,
             moves: [
               {
                 san: 'e4',

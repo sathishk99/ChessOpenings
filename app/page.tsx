@@ -5,7 +5,7 @@ import ChessBoardComponent from './components/ChessBoard';
 import MovesList from './components/MovesList';
 import VariantInfo from './components/VariantInfo';
 import { openingsData } from './data/openings';
-import { Opening, Variant, OpeningCategory } from './types/chess';
+import { Opening, Variant } from './types/chess';
 import { FaStepBackward, FaBackward, FaPlay, FaForward, FaStepForward } from 'react-icons/fa';
 
 export default function Home() {
@@ -17,46 +17,30 @@ export default function Home() {
   );
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
 
-  // Flatten all openings for dropdown
-  const allOpenings: { opening: Opening; category: OpeningCategory }[] = [];
-  openingsData.forEach(category => {
-    category.openings.forEach(opening => {
-      allOpenings.push({ opening, category });
-    });
-  });
-
-  // Find selected opening's variants
-  const variantOptions = selectedOpening.variants;
+  // Flatten all openings to easily find them by ID
+  const allOpenings = openingsData.flatMap(category => category.openings);
 
   // Dropdown handlers
   const handleOpeningChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const openingId = e.target.value;
-    const found = allOpenings.find(o => o.opening.id === openingId);
-    if (found) {
-      setSelectedOpening(found.opening);
-      setSelectedVariant(found.opening.variants[0]);
+    const foundOpening = allOpenings.find(o => o.id === openingId);
+    if (foundOpening) {
+      setSelectedOpening(foundOpening);
+      setSelectedVariant(foundOpening.variants[0]);
       setCurrentMoveIndex(-1);
     }
   };
 
   const handleVariantChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const variantId = e.target.value;
-    const found = selectedOpening.variants.find(v => v.id === variantId);
-    if (found) {
-      setSelectedVariant(found);
+    const foundVariant = selectedOpening.variants.find(v => v.id === variantId);
+    if (foundVariant) {
+      setSelectedVariant(foundVariant);
       setCurrentMoveIndex(-1);
     }
   };
 
-  const handleMoveClick = (index: number) => {
-    setCurrentMoveIndex(index);
-  };
-
-  const handleVariantSelect = (variant: Variant, opening: Opening) => {
-    setSelectedVariant(variant);
-    setSelectedOpening(opening);
-    setCurrentMoveIndex(-1);
-  };
+  const handleMoveClick = (index: number) => setCurrentMoveIndex(index);
 
   // Move navigation handlers
   const goToStart = () => setCurrentMoveIndex(-1);
@@ -65,127 +49,89 @@ export default function Home() {
   const goToEnd = () => setCurrentMoveIndex(selectedVariant.moves.length - 1);
 
   return (
-    <>
-      {/* Nav Bar */}
-      <nav className="bg-white shadow mb-8">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <span className="text-2xl font-bold text-blue-700">Chess Openings Explorer</span>
-          <div className="flex space-x-8">
-            <a href="#" className="text-gray-700 hover:text-blue-700 font-medium transition">Home</a>
-            <a href="#" className="text-gray-700 hover:text-blue-700 font-medium transition">Openings</a>
-            <a href="#" className="text-gray-700 hover:text-blue-700 font-medium transition">Analysis</a>
-          </div>
+    <main className="flex w-full h-screen bg-neutral-800 p-4 gap-4">
+      {/* Left Column: Chessboard and Player Info */}
+      <div className="flex flex-col justify-center items-center w-2/3">
+        {/* Placeholder for Top Player */}
+        <div className="w-full max-w-lg mb-2">
+          <p className="text-lg font-bold text-white">Teimour Radjabov</p>
         </div>
-      </nav>
-      <main className="min-h-screen bg-gray-100 py-8">
-        <div className="container mx-auto px-4">
-          {/* <h1 className="text-3xl font-bold text-center mb-8">Chess Openings Explorer</h1> */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-center gap-4 mb-8">
-            {/* Openings Dropdown */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Opening</label>
-              <select
-                value={selectedOpening.id}
-                onChange={handleOpeningChange}
-                className="w-64 p-2 rounded border"
-              >
-                {openingsData.map(category => (
-                  <optgroup key={category.id} label={category.name}>
-                    {category.openings.map(opening => (
-                      <option key={opening.id} value={opening.id}>
-                        {opening.name}
-                      </option>
-                    ))}
-                  </optgroup>
+
+        <div className="w-full max-w-lg aspect-square">
+          <ChessBoardComponent
+            variant={selectedVariant}
+            currentMoveIndex={currentMoveIndex}
+            onMoveChange={setCurrentMoveIndex}
+          />
+        </div>
+
+        {/* Placeholder for Bottom Player */}
+        <div className="w-full max-w-lg mt-2">
+          <p className="text-lg font-bold text-white">Nikolas Theodorou</p>
+        </div>
+      </div>
+
+      {/* Right Column: Analysis Panel */}
+      <div className="flex flex-col w-1/3 bg-neutral-900 rounded-lg p-4">
+        <h2 className="text-2xl font-bold text-white mb-4">Analysis</h2>
+        
+        {/* Openings and Variants Dropdowns */}
+        <div className="flex gap-4 mb-4">
+          <select
+            value={selectedOpening.id}
+            onChange={handleOpeningChange}
+            className="w-full p-2 rounded border bg-neutral-700 text-white border-neutral-600"
+          >
+            {openingsData.map(category => (
+              <optgroup key={category.id} label={category.name}>
+                {category.openings.map(opening => (
+                  <option key={opening.id} value={opening.id}>{opening.name}</option>
                 ))}
-              </select>
-            </div>
-            {/* Variants Dropdown */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Variation</label>
-              <select
-                value={selectedVariant.id}
-                onChange={handleVariantChange}
-                className="w-64 p-2 rounded border"
-              >
-                {variantOptions.map(variant => (
-                  <option key={variant.id} value={variant.id}>
-                    {variant.name} {variant.isMainLine ? '(Main Line)' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content Area */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="flex flex-col items-center">
-                <ChessBoardComponent
-                  variant={{
-                    ...selectedVariant,
-                    isMainLine: selectedVariant.isMainLine ?? false
-                  }}
-                  currentMoveIndex={currentMoveIndex}
-                  onMoveChange={setCurrentMoveIndex}
-                />
-                {/* Move controls below the board */}
-                <div className="flex space-x-4 mt-4 bg-neutral-900 p-2 rounded-lg">
-                  <button
-                    onClick={goToStart}
-                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
-                    aria-label="First"
-                  >
-                    {/* |< */}
-                    <FaStepBackward />
-                  </button>
-                  <button
-                    onClick={goToPrev}
-                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
-                    aria-label="Previous"
-                  >
-                    {/* < */}
-                    <FaBackward />
-                  </button>
-                  <button
-                    onClick={goToStart}
-                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 text-gray-400 text-xl cursor-default"
-                    aria-label="Play"
-                    disabled
-                  >
-                    {/* Play icon (disabled, for visual match) */}
-                    <FaPlay />
-                  </button>
-                  <button
-                    onClick={goToNext}
-                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
-                    aria-label="Next"
-                  >
-                    {/* > */}
-                    <FaForward />
-                  </button>
-                  <button
-                    onClick={goToEnd}
-                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
-                    aria-label="Last"
-                  >
-                    {/* >| */}
-                    <FaStepForward />
-                  </button>
-                </div>
-              </div>
-              <VariantInfo variant={selectedVariant} opening={selectedOpening} />
-            </div>
-            {/* Moves Panel */}
-            <div className="lg:col-span-1">
-              <MovesList
+              </optgroup>
+            ))}
+          </select>
+          <select
+            value={selectedVariant.id}
+            onChange={handleVariantChange}
+            className="w-full p-2 rounded border bg-neutral-700 text-white border-neutral-600"
+          >
+            {selectedOpening.variants.map(variant => (
+              <option key={variant.id} value={variant.id}>
+                {variant.name} {variant.isMainLine ? '(Main Line)' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Variant Info and Moves List */}
+        <div className="flex-grow overflow-y-auto pr-2">
+            <VariantInfo variant={selectedVariant} opening={selectedOpening} />
+            <MovesList
                 variant={selectedVariant}
                 currentMoveIndex={currentMoveIndex}
                 onMoveClick={handleMoveClick}
-              />
-            </div>
-          </div>
+            />
         </div>
-      </main>
-    </>
+        
+        {/* Move Controls at the bottom */}
+        <div className="flex justify-center space-x-2 mt-4 p-2 rounded-lg bg-neutral-800">
+          <button onClick={goToStart} aria-label="First" className="w-16 h-12 flex items-center justify-center rounded bg-neutral-700 hover:bg-neutral-600 text-gray-300 text-2xl">
+            <FaStepBackward />
+          </button>
+          <button onClick={goToPrev} aria-label="Previous" className="w-16 h-12 flex items-center justify-center rounded bg-neutral-700 hover:bg-neutral-600 text-gray-300 text-2xl">
+            <FaBackward />
+          </button>
+          <button aria-label="Play" disabled className="w-16 h-12 flex items-center justify-center rounded bg-neutral-700 text-gray-500 text-2xl cursor-default">
+            <FaPlay />
+          </button>
+          <button onClick={goToNext} aria-label="Next" className="w-16 h-12 flex items-center justify-center rounded bg-neutral-700 hover:bg-neutral-600 text-gray-300 text-2xl">
+            <FaForward />
+          </button>
+          <button onClick={goToEnd} aria-label="Last" className="w-16 h-12 flex items-center justify-center rounded bg-neutral-700 hover:bg-neutral-600 text-gray-300 text-2xl">
+            <FaStepForward />
+          </button>
+        </div>
+      </div>
+    </main>
   );
 }

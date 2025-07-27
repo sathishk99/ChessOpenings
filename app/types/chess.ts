@@ -10,7 +10,7 @@ export interface Variant {
   eco: string;
   moves: Move[];
   description: string;
-  isMainLine?: boolean;
+  isMainLine: boolean;
 }
 
 export interface Opening {
