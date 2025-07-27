@@ -6,6 +6,7 @@ import MovesList from './components/MovesList';
 import VariantInfo from './components/VariantInfo';
 import { openingsData } from './data/openings';
 import { Opening, Variant, OpeningCategory } from './types/chess';
+import { FaStepBackward, FaBackward, FaPlay, FaForward, FaStepForward } from 'react-icons/fa';
 
 export default function Home() {
   const [selectedVariant, setSelectedVariant] = useState<Variant>(
@@ -56,6 +57,12 @@ export default function Home() {
     setSelectedOpening(opening);
     setCurrentMoveIndex(-1);
   };
+
+  // Move navigation handlers
+  const goToStart = () => setCurrentMoveIndex(-1);
+  const goToPrev = () => setCurrentMoveIndex(idx => Math.max(idx - 1, -1));
+  const goToNext = () => setCurrentMoveIndex(idx => Math.min(idx + 1, selectedVariant.moves.length - 1));
+  const goToEnd = () => setCurrentMoveIndex(selectedVariant.moves.length - 1);
 
   return (
     <>
@@ -112,7 +119,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content Area */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center">
                 <ChessBoardComponent
                   variant={{
                     ...selectedVariant,
@@ -121,6 +128,50 @@ export default function Home() {
                   currentMoveIndex={currentMoveIndex}
                   onMoveChange={setCurrentMoveIndex}
                 />
+                {/* Move controls below the board */}
+                <div className="flex space-x-4 mt-4 bg-neutral-900 p-2 rounded-lg">
+                  <button
+                    onClick={goToStart}
+                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
+                    aria-label="First"
+                  >
+                    {/* |< */}
+                    <FaStepBackward />
+                  </button>
+                  <button
+                    onClick={goToPrev}
+                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
+                    aria-label="Previous"
+                  >
+                    {/* < */}
+                    <FaBackward />
+                  </button>
+                  <button
+                    onClick={goToStart}
+                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 text-gray-400 text-xl cursor-default"
+                    aria-label="Play"
+                    disabled
+                  >
+                    {/* Play icon (disabled, for visual match) */}
+                    <FaPlay />
+                  </button>
+                  <button
+                    onClick={goToNext}
+                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
+                    aria-label="Next"
+                  >
+                    {/* > */}
+                    <FaForward />
+                  </button>
+                  <button
+                    onClick={goToEnd}
+                    className="w-12 h-12 flex items-center justify-center rounded bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-xl"
+                    aria-label="Last"
+                  >
+                    {/* >| */}
+                    <FaStepForward />
+                  </button>
+                </div>
               </div>
               <VariantInfo variant={selectedVariant} opening={selectedOpening} />
             </div>
